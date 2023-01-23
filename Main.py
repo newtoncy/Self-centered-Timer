@@ -104,7 +104,7 @@ class MainWindow(QMainWindow):
     def update_time(self):
         t = MyDateTime.now()
         today = MyDateTime(t.stage, t.cycle, t.day)
-        next_day = MyDateTime(t.stage, t.cycle, t.day + 1)
+        next_day = MyDateTime(t.stage, t.cycle, t.day + 1, skip_check=True)
         self.label.setText(f"{t.stage}-{t.cycle}-{t.day}  {t.hour:02}:{t.minute:02}:{t.second:02}")
         self.label2.setText(
             f"今天有{((next_day - today).total_seconds() / 3600):.1f}小时, 还剩{((next_day - t).total_seconds() / 3600):.01f}小时")

@@ -204,7 +204,7 @@ class DatetimeContext:
         for context in self.path_map[self.save_path]["context_list"]:
             assert isinstance(context, DatetimeContext)
             for obj in context._bind_dt.values():
-                obj.on_context_update()
+                obj.re_calc_datetime()
 
     class EditDate:
         def __init__(self, context: DatetimeContext):
@@ -309,11 +309,11 @@ class MyDateTime:
         if context is ...:
             context = self.get_default_context()
         context.bind(self)
+        if not kwargs.get("skip_check", False):
+            hour, minute, second, microsecond = _check_time_fields(
+                hour, minute, second, microsecond, context)
 
-        hour, minute, second, microsecond = _check_time_fields(
-            hour, minute, second, microsecond, context)
-
-        stage, cycle, day = _check_date_field(stage, cycle, day, context)
+            stage, cycle, day = _check_date_field(stage, cycle, day, context)
         self._stage = stage
         self._cycle = cycle
         self._day = day
@@ -326,8 +326,9 @@ class MyDateTime:
         self._timestamp = kwargs.get("_force_timestamp")
         if self._timestamp is None:
             self.timestamp()
+        self.re_calc_datetime()  # 要判断一个日期是合法的，太难了，所以重新从时间戳中计算一次
 
-    def on_context_update(self):
+    def re_calc_datetime(self):
         self._stage, self._cycle, self._day, self._hour, self._minute, self._second, self._microsecond \
             = self._from_timestamp_internal(self._timestamp, self._context)
 
@@ -366,7 +367,8 @@ class MyDateTime:
         return cls(*cls._from_timestamp_internal(t, context), _force_timestamp=t)
 
     def timestamp(self) -> float:
-        # todo: 没有用上缓存的！
+        if self._timestamp is not None:
+            return self._timestamp
         t = 0
         context = self._context
 

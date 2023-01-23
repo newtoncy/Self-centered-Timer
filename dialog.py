@@ -22,12 +22,12 @@ class SetHourTodayDialog(QDialog):
     def exec(self):
         from mytime import MyDateTime
         t = MyDateTime.now()
-        pre_day = MyDateTime(t.stage, t.cycle, t.day - 1)
         today = MyDateTime(t.stage, t.cycle, t.day)
-        next_day = MyDateTime(t.stage, t.cycle, t.day + 1)
-        if (t - today).total_seconds() > 4 * 3600:
+        next_day = MyDateTime(t.stage, t.cycle, t.day + 1, skip_check=True)
+        if t.stage == 1 and t.cycle == 1 and t.day == 1 or (t - today).total_seconds() > 4 * 3600:
             hours = (next_day - today).total_seconds() / 3600
         else:
+            pre_day = MyDateTime(t.stage, t.cycle, t.day - 1, skip_check=True)
             hours = (today - pre_day).total_seconds() / 3600
         self.ui.doubleSpinBox.setValue(hours)
         super().exec()
